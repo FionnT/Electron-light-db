@@ -7,7 +7,8 @@ Supports storing values at any depth level, and allows modifiying multiple value
   Usage
 ---
  
-  Include a defaults.json file with pre-configured settings in JSON format.
+  Include a defaults.json file with pre-configured settings in JSON format:
+  (It can be an empty file)
   
     {
       "screen": {
@@ -32,25 +33,45 @@ Supports storing values at any depth level, and allows modifiying multiple value
         }
     }
 
-  index.js 
+---
+
+## Initialising the module:
     
     const electron = require('electron')
     const path = require('path')
     const app = electron.app
-    const BrowserWindow = electron.BrowserWindow
     const db = require('electron-light-db')
-
+    
+    // This call is required at least once per application run, but values are stored thereafter
     db.initialise({
       'storage': path.join(app.getPath('userData') + '/preferences.json'),
       'default': path.join(__dirname + '/static/defaults.json'),
       'reset': true // Boolean - use to force a full reset to defaults
     })
     
-    db.set('screen', {"width" : 1200, "height": 1200});
-    db.set('example.a.b.c.d.e', 5);
-    db.set('example.a.b.c.d.e.f' {"h": 3, "i" : 5});
+
+## Get Operations:  
+
+#### Format: 
+
+    @param key: String - The key to set, or subkey specified with key.subkey.subkey notation
+    @param data: Any - Returned key:value pair, or false if there was an error
+    @param err: Any - Only returned is data is false, there was an error
+    @param force (optional): Boolean - Forces a re-read of the preferences.json file to make sure we have the up to date 
+                  version - Defaults to true.
     
-    db.get('screen', (screen) => {
+    // Call back is optional
+    db.get(key, (data, err) => {
+      // Do stuff
+    })  
+    
+    
+ 
+#### We can pull the blob and specify sub-keys:
+    
+    let example = db.get('example')
+    
+    db.get(key, (screen) => {
       mainWindow = new BrowserWindow({
         "width": screen.width,
         "height": screen.height,
@@ -65,7 +86,7 @@ Supports storing values at any depth level, and allows modifiying multiple value
       mainWindow.loadFile('static/pages/index.pug')
     })  
     
-    // Or we can just pass the full returned object as it's a JSON blob
+#### We can pass the full return as it's a JSON blob:
    
     db.get('screen', (screen) => {
       mainWindow = new BrowserWindow(screen)
@@ -73,8 +94,9 @@ Supports storing values at any depth level, and allows modifiying multiple value
     })  
     
     
-    // Or we can get just the height value from storage 
-    db.get('screen.height', (height) => {
+#### Or we can pull indivual values from storage (any depth): 
+  
+    db.get('example.a.b.c.d.e.f', (height) => {
       mainWindow = new BrowserWindow({
         "width": 1200,
         "height": height,
@@ -87,4 +109,43 @@ Supports storing values at any depth level, and allows modifiying multiple value
       mainWindow.loadFile('static/pages/index.pug')
     }) 
     
-     
+  
+ ## Set operations: 
+  
+#### Format: 
+
+    @param key: String - The key to set, or subkey specified with key.subkey.subkey notation
+    @param value: Any - The value to update the key to
+    @param success (optional): Any - Returns updated key:value pair, or false if there was an error
+    @param err (optional): Any - Only returned if success is false
+    @param force (optional): Boolean - Forces a re-read of the preferences.json file to make sure we have the up to date
+                  version - defaults to true.
+  
+    // Callback is optional
+    db.set(key, value, (success, err) => { 
+      // do stuff
+    }, force);
+    
+  
+#### We can pass a JSON blob into a key name, and it's objects will be merged, retaining any other existing keys: 
+
+    db.set('screen', {"width" : 1200, "height": 1200});
+      
+    // This format works at any depth level: 
+    
+    db.set('example.a.b.c.d.e.f' {"h": 3, "i" : 5});
+
+#### We can also simply modify any key individually :
+
+    db.set('example', "test");
+   
+    // This format also works at any depth level:
+    
+    db.set('example.a.b.c.d.e', 5);
+        
+
+## Resetting a value to the default setting: 
+  
+    db.reset('screen') // Must be a string
+    db.reset('screen.height')
+    db.reset('example.a.b.c.d.e')
