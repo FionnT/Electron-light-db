@@ -32,6 +32,7 @@ Supports storing values at any depth level, and allows modifiying multiple value
         }
     }
     
+--- 
 
 ### Initialising the module:
 
@@ -48,10 +49,11 @@ The initialise call with default, and storage value specified is required at lea
       'reset': true // Boolean - use to force a full reset to defaults
     })
     
+--- 
 
 ### Get Operations:  
 
-##### Format: 
+#### Format: 
 
     @param key: String - The key to set, or subkey specified with key.subkey.subkey notation
     @param data: Any - Returned key:value pair, or false if there was an error
@@ -66,7 +68,7 @@ The initialise call with default, and storage value specified is required at lea
     
     
  
-###### We can pull the blob and specify sub-keys:
+##### We can pull the blob and specify sub-keys:
     
     let example = db.get('example')
     
@@ -85,7 +87,7 @@ The initialise call with default, and storage value specified is required at lea
       mainWindow.loadFile('static/pages/index.pug')
     })  
     
-###### We can pass the full return as it's a JSON blob:
+##### We can pass the full return as it's a JSON blob:
    
     db.get('screen', (screen) => {
       mainWindow = new BrowserWindow(screen)
@@ -93,7 +95,7 @@ The initialise call with default, and storage value specified is required at lea
     })  
     
     
-###### Or we can pull indivual values from storage (any depth): 
+##### Or we can pull indivual values from storage (any depth): 
   
     db.get('example.a.b.c.d.e.f', (height) => {
       mainWindow = new BrowserWindow({
@@ -108,7 +110,7 @@ The initialise call with default, and storage value specified is required at lea
       mainWindow.loadFile('static/pages/index.pug')
     }) 
     
-###### Lastly we can also reference returned values without using a callback via async/await: 
+##### Lastly we can also reference returned values without using a callback via async/await: 
     
     const example = async () => {
       const screen = await db.get('screen')
@@ -116,9 +118,11 @@ The initialise call with default, and storage value specified is required at lea
     }
     example()
 
+---
+
 ### Set operations: 
   
-###### Format: 
+##### Format: 
 
     @param key: String - The key to set, or subkey specified with key.subkey.subkey notation
     @param value: Any - The value to update the key to
@@ -133,7 +137,7 @@ The initialise call with default, and storage value specified is required at lea
     }, force);
     
   
-###### We can pass a JSON blob into a key name, and it's objects will be merged, overwriting passed keys, but retaining any other existing keys: 
+##### We can pass a JSON blob into a key name, and it's objects will be merged, overwriting passed keys, but retaining any other existing keys: 
 
     db.set('screen', {"width" : 1200, "height": 1200});
       
@@ -141,7 +145,7 @@ The initialise call with default, and storage value specified is required at lea
     
     db.set('example.a.b.c.d.e.f' {"h": 3, "i" : 5});
 
-###### We can also simply modify any key individually :
+##### We can also simply modify any key individually :
 
     db.set('example', "test");
    
@@ -149,8 +153,9 @@ The initialise call with default, and storage value specified is required at lea
     
     db.set('example.a.b.c.d.e', 5);
         
+--- 
 
-###### Resetting a value to the default setting pulled from defaults.json: 
+##### Resetting a value to the default setting pulled from defaults.json: 
   
     db.reset('screen') // Must be a string
     db.reset('screen.height')
