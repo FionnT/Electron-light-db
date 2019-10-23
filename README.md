@@ -57,7 +57,7 @@ The initialise call with default, and storage value specified is required at lea
 
     @param key: String - The key to set, or subkey specified with key.subkey.subkey notation
     @param data: Any - Returned key:value pair, or false if there was an error
-    @param err: Any - Only returned is data is false, there was an error
+    @param err: Any - Only returned if data is false
     @param force (optional): Boolean - Forces a re-read of the preferences.json file to make sure we have the up to date 
                   version - Defaults to true.
     
