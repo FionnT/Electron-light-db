@@ -1,4 +1,4 @@
-# Electron-light-db
+# Electron Light DB
 
 A lightweight Chrome.Storage - Mongoose like database for Electron which stores data in a single JSON blob file. 
 
@@ -53,7 +53,7 @@ The initialise call with default, and storage value specified is required at lea
 
 ### Get Operations:  
 
-#### Format: 
+##### Format: 
 
     @param key: String - The key to set, or subkey specified with key.subkey.subkey notation
     @param data: Any - Returned key:value pair, or false if there was an error
