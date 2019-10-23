@@ -2,8 +2,6 @@
 
 A lightweight Chrome.Storage - Mongoose like database for Electron which stores data in a single JSON blob file. 
 
-Credits and <3 to lodash for their Object.merge()
-
 Supports: 
 
 1. Storing values at any depth level
