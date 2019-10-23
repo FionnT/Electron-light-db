@@ -109,7 +109,14 @@ Supports storing values at any depth level, and allows modifiying multiple value
       mainWindow.loadFile('static/pages/index.pug')
     }) 
     
-  
+#### Lastly we can also reference returned values without using a callback via async/await: 
+
+    const example = async () => {
+      const screen = await db.get('screen')
+      console.log(screen)
+    }
+    example()
+
  ## Set operations: 
   
 #### Format: 
