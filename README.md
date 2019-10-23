@@ -45,7 +45,7 @@ Supports:
 
 ### Initialising the module:
 
-The initialise call with default, and storage value specified is required at least once per application run, but values are stored thereafter
+The initialise call with 'default', and 'storage' values specified is required at least once per application run, but values are stored thereafter
 
     const electron = require('electron')
     const path = require('path')
@@ -55,7 +55,8 @@ The initialise call with default, and storage value specified is required at lea
     db.initialise({
       'storage': path.join(app.getPath('userData') + '/preferences.json'),
       'default': path.join(__dirname + '/static/defaults.json'),
-      'reset': true // Boolean - use to force a full reset to defaults
+      'reset': true // Optional Boolean - use to force a full reset to defaults
+      'force': false // Optional Boolean - use to force a re-read of preferences.json
     })
     
 --- 
