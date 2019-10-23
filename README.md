@@ -2,7 +2,16 @@
 
 A lightweight Chrome.Storage - Mongoose like database for Electron which stores data in a single JSON blob file. 
 
-Supports storing values at any depth level, and allows modifiying multiple values at a time at any depth level without overwriting existing values, or mutating types. 
+Credits and <3 to lodash for their Object.merge()
+
+Supports: 
+
+1. Storing values at any depth level
+2. Modifiying values at any depth level
+3. Reading values at any depth level
+4. Modifiying multiple values simultaneously, at any depth level
+5. Does not overwrite sibling keys
+6. Does not mutate types 
 
 ## Usage
  
