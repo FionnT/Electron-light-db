@@ -5,7 +5,6 @@ A lightweight Chrome.Storage - Mongoose like database for Electron which stores 
 Supports storing values at any depth level, and allows modifiying multiple values at a time at any depth level without overwriting existing values, or mutating types. 
 
 ## Usage
----
  
   Include a defaults.json file with pre-configured settings in JSON format:
   (It can be an empty file)
@@ -86,7 +85,7 @@ The initialise call with default, and storage value specified is required at lea
       mainWindow.loadFile('static/pages/index.pug')
     })  
     
-##### We can pass the full return as it's a JSON blob:
+###### We can pass the full return as it's a JSON blob:
    
     db.get('screen', (screen) => {
       mainWindow = new BrowserWindow(screen)
@@ -94,7 +93,7 @@ The initialise call with default, and storage value specified is required at lea
     })  
     
     
-##### Or we can pull indivual values from storage (any depth): 
+###### Or we can pull indivual values from storage (any depth): 
   
     db.get('example.a.b.c.d.e.f', (height) => {
       mainWindow = new BrowserWindow({
@@ -119,7 +118,7 @@ The initialise call with default, and storage value specified is required at lea
 
 ### Set operations: 
   
-##### Format: 
+###### Format: 
 
     @param key: String - The key to set, or subkey specified with key.subkey.subkey notation
     @param value: Any - The value to update the key to
@@ -134,7 +133,7 @@ The initialise call with default, and storage value specified is required at lea
     }, force);
     
   
-##### We can pass a JSON blob into a key name, and it's objects will be merged, overwriting passed keys, but retaining any other existing keys: 
+###### We can pass a JSON blob into a key name, and it's objects will be merged, overwriting passed keys, but retaining any other existing keys: 
 
     db.set('screen', {"width" : 1200, "height": 1200});
       
@@ -142,7 +141,7 @@ The initialise call with default, and storage value specified is required at lea
     
     db.set('example.a.b.c.d.e.f' {"h": 3, "i" : 5});
 
-##### We can also simply modify any key individually :
+###### We can also simply modify any key individually :
 
     db.set('example', "test");
    
@@ -151,7 +150,7 @@ The initialise call with default, and storage value specified is required at lea
     db.set('example.a.b.c.d.e', 5);
         
 
-### Resetting a value to the default setting pulled from defaults.json: 
+###### Resetting a value to the default setting pulled from defaults.json: 
   
     db.reset('screen') // Must be a string
     db.reset('screen.height')
