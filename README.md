@@ -152,7 +152,7 @@ The initialise call with default, and storage value specified is required at lea
       
     // This format works at any depth level: 
     
-    db.set('example.a.b.c.d.e.f' {"h": 3, "i" : 5});
+    db.set('example.a.b.c.d.e.f', {"h": 3, "i" : 5});
 
 ##### We can also simply modify any key individually :
 
