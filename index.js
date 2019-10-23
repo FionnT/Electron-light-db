@@ -1,221 +1,223 @@
-const fs = require('fs')
-const _object = require('lodash/fp/object')
-// Renderer process has to get `input` module via `remote`, whereas the main process can get it directly
-// input.getPath('userData') will return a string of the user's input data directory path.
+const fs = require("fs");
+const _object = require("lodash/fp/object");
 const options = {
   storage: undefined,
   default: undefined
-}
-let database
-
+};
+let database;
 // handles buffering file and enables referencing
-const initialise = async (opt) => {
+const initialise = async opt => {
   // removes the need to specify defaults on every call
   // by persisting any passed settings
-  let opts = opt
+  let opts = opt;
   for (key in options) {
     if (!opts[key] && options[key]) {
-      opts[key] = options[key]
-    } else if (opts[key]) options[key] = opts[key]
+      opts[key] = options[key];
+    } else if (opts[key]) options[key] = opts[key];
     else if (!options[key] && !opts[key])
-      throw new Error('Please pass a ' + key + ' location, at least once.')
+      throw new Error("Please pass a " + key + " location, at least once.");
   }
 
   if (!opts.reset && !opts.force) {
     return new Promise((resolve, reject) => {
-      if (database) resolve(database)
+      if (database) resolve(database);
       else {
         try {
-          fs.exists(opts.storage, (exists) => {
+          fs.exists(opts.storage, exists => {
             if (exists) {
               try {
-                database = JSON.parse(fs.readFileSync(opts.storage))
-                resolve(database)
+                fs.readFile(opts.storage, (err, data) => {
+                  if (err) reject(err);
+                  database = JSON.parse(data);
+                  resolve(database);
+                });
               } catch {
                 throw new Error(
                   "Couldn't read the file. Make sure it's JSON parsable."
-                )
+                );
               }
             } else {
-              fs.exists(opts.default, (exists) => {
+              fs.exists(opts.default, exists => {
                 if (exists) {
-                  fs.copyFile(opts.default, opts.storage, (err) => {
-                    if (err) reject(err)
+                  fs.copyFile(opts.default, opts.storage, err => {
+                    if (err) reject(err);
                     else {
                       try {
-                        database = JSON.parse(fs.readFileSync(opts.storage))
-                        resolve(database)
-                      } catch {
-                        throw new Error(
-                          "Couldn't read the file. Make sure it's JSON parsable."
-                        )
+                        fs.readFile(opts.storage, (err, data) => {
+                          if (err) reject(err);
+                          database = JSON.parse(data);
+                          resolve(database);
+                        });
+                      } catch (err) {
+                        throw new Error(err);
                       }
                     }
-                  })
+                  });
                 }
-              })
+              });
             }
-          })
+          });
         } catch (err) {
-          reject(err)
+          reject(err);
         }
       }
-    })
+    });
   } else if (!opts.reset && opts.force) {
     return new Promise((resolve, reject) => {
-      fs.exists(opts.storage, (exists) => {
+      fs.exists(opts.storage, exists => {
         if (exists) {
           try {
-            database = JSON.parse(fs.readFileSync(opts.storage))
-            resolve(database)
-          } catch {
-            throw new Error(
-              "Couldn't read the file. Make sure it's JSON parsable."
-            )
+            fs.readFile(opts.storage, (err, data) => {
+              if (err) reject(err);
+              database = JSON.parse(data);
+              resolve(database);
+            });
+          } catch (err) {
+            throw new Error(err);
           }
         }
-      })
-    })
+      });
+    });
   } else if (opts.reset) {
     return new Promise((resolve, reject) => {
-      fs.copyFile(opts.default, opts.storage, (err) => {
-        if (err) reject(err)
-        fs.readFileSync(opts.storage, (data) => {
-          database = JSON.parse(data)
-          resolve(database)
-        })
-      })
-    })
+      fs.copyFile(opts.default, opts.storage, err => {
+        if (err) reject(err);
+        fs.readFile(opts.storage, (err, data) => {
+          if (err) reject(err);
+          database = JSON.parse(data);
+          resolve(database);
+        });
+      });
+    });
   }
-}
+};
 
 // builds the easy syntax passed by a request into a JSON object for merging with main JSON Storage blob
 const construct = (selection, value, callback) => {
-  let built = {}
-  let array = selection.split('.')
+  let built = {};
+  let array = selection.split(".");
   // .split returns length == 1 with 0 matches
   if (array.length == 1) {
-    if (typeof value == 'object') {
-      built = JSON.parse('{"' + selection + '": {}}')
-      built[selection] = value
-    } else built = JSON.parse('{' + selection + ':' + value + '}')
+    if (typeof value == "object") {
+      built = JSON.parse('{"' + selection + '": {}}');
+      built[selection] = value;
+    } else built = JSON.parse("{" + selection + ":" + value + "}");
   } else {
     try {
       array.forEach((item, index) => {
-        let helper = {}
-        let passed = item.toString()
+        let helper = {};
+        let passed = item.toString();
         index == array.length - 1
           ? (helper[passed] = value) // assign the last specified object the value passed
-          : (helper[passed] = {}) // assign an empty object for parents
-        Object.assign(built, helper)
-      })
+          : (helper[passed] = {}); // assign an empty object for parents
+        Object.assign(built, helper);
+      });
     } catch {
-      null
+      null;
       // last value of array is undefined,
       // so 'Object' throws an error when trying to assign
     }
 
     for (i = array.length - 1; i > 0; i--) {
-      let helper
-      let key = Object.keys(built)[i]
-      let value = built[key]
-      typeof value == 'object'
-        ? (helper = JSON.parse('{"' + key + '":' + JSON.stringify(value) + '}')) // convert key with typeof JSON (assigned a value) to string for parsing back to JSON
-        : (helper = JSON.parse('{"' + key + '":' + value + '}')) // prevent ""_string_""
-      built[Object.keys(built)[i - 1]] = helper
-      delete built[Object.keys(built)[i]] // cleanup the bumped item
+      let helper;
+      let key = Object.keys(built)[i];
+      let value = built[key];
+      typeof value == "object"
+        ? (helper = JSON.parse('{"' + key + '":' + JSON.stringify(value) + "}")) // convert key with typeof JSON (assigned a value) to string for parsing back to JSON
+        : (helper = JSON.parse('{"' + key + '":' + value + "}")); // prevent ""_string_""
+      built[Object.keys(built)[i - 1]] = helper;
+      delete built[Object.keys(built)[i]]; // cleanup the bumped item
     }
   }
-  callback(built)
-}
+  callback(built);
+};
 
 // Set the key:value pair, or a sub key:value pair if requested
 const set = async (selection, value, callback, force) => {
-  if (!force) force = true // force refreshing from file by default
-  if (typeof selection == 'string' && value) {
-    await initialise({'force': force}).then((database) => {
-      construct(selection, value, (data) => {
-        database = _object.merge(database, data) // <3 to lodash
-        console.log(database)
-        fs.writeFile(options.storage, JSON.stringify(database), (err) => {
-          if (typeof callback == 'function') {
-            if (err) callback(false, err)
-            else callback(true)
+  if (!force) force = true; // force refreshing from file by default
+  if (typeof selection == "string" && value) {
+    await initialise({ force: force }).then(database => {
+      construct(selection, value, data => {
+        database = _object.merge(database, data); // <3 to lodash
+        fs.writeFile(options.storage, JSON.stringify(database), err => {
+          if (typeof callback == "function") {
+            if (err) callback(false, err);
+            else callback(true);
           } else {
-            if (err) reject(err)
-            else return true
+            if (err) reject(err);
+            else return true;
           }
-        })
-      })
-    })
+        });
+      });
+    });
   } else
-    throw new Error('Call to setter detected, but no parameters were valid')
-}
+    throw new Error("Call to setter detected, but no parameters were valid");
+};
 
 const reset = async (selection, callback) => {
-  let value
+  let value;
   if (
     selection &&
-    typeof selection == 'string' &&
-    typeof callback == 'function'
+    typeof selection == "string" &&
+    typeof callback == "function"
   ) {
     fs.readFile(defaults, (err, data) => {
-      if (err) callback(false, err)
+      if (err) callback(false, err);
       else {
-        let original = JSON.parse(data)
-        let key = 'original.' + selection
+        let original = JSON.parse(data);
+        let key = "original." + selection;
         try {
-          value = eval(key)
-          set(selection, value, callback)
+          value = eval(key);
+          set(selection, value, callback);
         } catch {
-          callback(false, "Couldn't find that setting in defaults.")
+          callback(false, "Couldn't find that setting in defaults.");
         }
       }
-    })
+    });
   } else if (!selection && !callback) {
-    callback(false, 'Please pass parameters.')
+    callback(false, "Please pass parameters.");
   } else if (
     selection &&
-    typeof selection !== 'string' &&
-    typeof callback == 'function'
+    typeof selection !== "string" &&
+    typeof callback == "function"
   ) {
     callback(
       false,
-      'Expected selection to be a string, but got ' + typeof selection
-    )
-  } else return 'Your parameters were incorrect in an unexpected way.'
-}
+      "Expected selection to be a string, but got " + typeof selection
+    );
+  } else return "Your parameters were incorrect in an unexpected way.";
+};
 
 const get = async (selection, callback, force) => {
-  let data
-  if (!force) force = true // force refreshing from file by default
-  await initialise({'force': force})
-    .then((database) => {
-      if (typeof selection !== 'function') {
-        let key = 'database.' + selection
+  let data;
+  if (!force) force = true; // force refreshing from file by default
+  await initialise({ force: force })
+    .then(database => {
+      if (typeof selection !== "function") {
+        let key = "database." + selection;
         try {
-          data = eval(key) // return one pair
-          return true
+          data = eval(key); // return one pair
+          return true;
         } catch {
-          return true // data = undefined;
+          return true; // data = undefined;
         }
       } else {
-        data = database // return full json object
-        return true
+        data = database; // return full json object
+        return true;
       }
     })
-    .catch((err) => {
-      callback(false, err)
-    })
-  if (typeof callback == 'function') {
-    if (data) callback(data)
-    else callback(false, "Couldn't find that setting in storage.")
-  } else return data
-}
+    .catch(err => {
+      callback(false, err);
+    });
+  if (typeof callback == "function") {
+    if (data) callback(data);
+    else callback(false, "Couldn't find that setting in storage.");
+  } else return data;
+};
 
 module.exports = {
   initialise,
   get,
   set,
   reset
-}
+};
