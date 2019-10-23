@@ -36,13 +36,14 @@ Supports storing values at any depth level, and allows modifiying multiple value
 ---
 
 ## Initialising the module:
-    
+
+The initialise call with default, and storage value specified is required at least once per application run, but values are stored thereafter
+
     const electron = require('electron')
     const path = require('path')
     const app = electron.app
     const db = require('electron-light-db')
-    
-    // This call is required at least once per application run, but values are stored thereafter
+   
     db.initialise({
       'storage': path.join(app.getPath('userData') + '/preferences.json'),
       'default': path.join(__dirname + '/static/defaults.json'),
@@ -63,7 +64,7 @@ Supports storing values at any depth level, and allows modifiying multiple value
     // Call back is optional
     db.get(key, (data, err) => {
       // Do stuff
-    })  
+    }, force)  
     
     
  
@@ -110,7 +111,7 @@ Supports storing values at any depth level, and allows modifiying multiple value
     }) 
     
 #### Lastly we can also reference returned values without using a callback via async/await: 
-
+    
     const example = async () => {
       const screen = await db.get('screen')
       console.log(screen)
@@ -151,7 +152,7 @@ Supports storing values at any depth level, and allows modifiying multiple value
     db.set('example.a.b.c.d.e', 5);
         
 
-## Resetting a value to the default setting: 
+## Resetting a value to the default setting pulled from defaults.json: 
   
     db.reset('screen') // Must be a string
     db.reset('screen.height')
