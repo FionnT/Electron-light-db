@@ -76,8 +76,6 @@ The initialise call with 'default', and 'storage' values specified is required a
 
 ##### We can pull the blob and specify sub-keys:
 
-    let example = db.get('example')
-
     db.get(key, (screen) => {
       mainWindow = new BrowserWindow({
         "width": screen.width,

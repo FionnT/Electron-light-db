@@ -84,7 +84,7 @@ const initialise = async opt => {
           } catch (err) {
             throw new Error(err);
           }
-        } else reject("Couldn't find the file!");
+        } else throw new Error("Couldn't find the file!");
       });
     });
   } else if (opts.reset) {
@@ -96,7 +96,7 @@ const initialise = async opt => {
             resolve(database);
           });
         } catch (err) {
-          reject(err);
+          throw new Error(err);
         }
       });
     });
@@ -192,7 +192,7 @@ const reset = async (selection, callback) => {
       }
     });
   } else if (!selection && !callback) {
-    callback(false, "Please pass parameters.");
+    throw new Error("Please pass parameters to your reset call.");
   } else if (
     selection &&
     typeof selection !== "string" &&
