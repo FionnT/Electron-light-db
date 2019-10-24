@@ -96,7 +96,7 @@ const initialise = async opt => {
             resolve(database);
           });
         } catch (err) {
-          throw new Error(err);
+          reject(err);
         }
       });
     });
@@ -145,33 +145,30 @@ const construct = (selection, value, callback) => {
 
 // Set the key:value pair, or a sub key:value pair if requested
 const set = async (selection, value, callback, force) => {
-  if (!force) force = true; // force refreshing from file by default
-  if (typeof selection == "string" && value) {
-    await initialise({ force: force }).then(database => {
-      construct(selection, value, data => {
-        let output = new Buffer(JSON.stringify(_object.merge(database, data)));
-        // fs.writeFile(options.storage, , (err) => {
-        //   if (typeof callback == 'function') {
-        //     if (err) callback(false, err)
-        //     else callback(true)
-        //   } else {
-        //     if (err) reject(err)
-        //     else return true
-        //   }
-        // })
-        fs.open(options.storage, "w", function(err, fd) {
-          if (err) throw "could not open file: " + err;
-          fs.write(fd, output, 0, output.length, null, function(err) {
-            if (err) throw "error writing file: " + err;
-            fs.close(fd, err => {
-              if (err) throw new Error(err);
+  return new Promise(async (resolve, reject) => {
+    if (!force) force = true; // force refreshing from file by default
+    if (typeof selection == "string" && value) {
+      await initialise({ force: force }).then(database => {
+        construct(selection, value, data => {
+          let output = new Buffer(
+            JSON.stringify(_object.merge(database, data))
+          );
+          fs.open(options.storage, "w", function(err, fd) {
+            if (err) reject("could not open file: " + err);
+            fs.write(fd, output, 0, output.length, null, function(err) {
+              if (err) reject("error writing file: " + err);
+              fs.close(fd, err => {
+                if (err) reject(err);
+                if (callback && typeof callback == "function") callback();
+                else resolve();
+              });
             });
           });
         });
       });
-    });
-  } else
-    throw new Error("Call to setter detected, but no parameters were valid");
+    } else
+      throw new Error("Call to setter detected, but no parameters were valid");
+  });
 };
 
 const reset = async (selection, callback) => {
@@ -209,30 +206,35 @@ const reset = async (selection, callback) => {
 };
 
 const get = async (selection, callback, force) => {
-  let data;
-  if (!force) force = true; // force refreshing from file by default
-  await initialise({ force: force })
-    .then(database => {
-      if (typeof selection !== "function") {
-        let key = "database." + selection;
-        try {
-          data = eval(key); // return one pair
-          return true;
-        } catch {
-          return true; // data = undefined;
+  return new Promise(async (resolve, reject) => {
+    let data;
+    if (!force) force = true; // force refreshing from file by default
+    await initialise({ force: force })
+      .then(database => {
+        if (typeof selection !== "function") {
+          let key = "database." + selection;
+          try {
+            data = eval(key); // return one pair
+            if (callback && typeof callback == "function") callback(data);
+            else resolve(data);
+          } catch {
+            if (callback && typeof callback == "function") callback(data);
+            else resolve(data);
+          }
+        } else {
+          data = database; // return full json object
+          if (callback && typeof callback == "function") callback(data);
+          else resolve(data);
         }
-      } else {
-        data = database; // return full json object
-        return true;
-      }
-    })
-    .catch(err => {
-      callback(false, err);
-    });
-  if (typeof callback == "function") {
-    if (data) callback(data);
-    else callback(false, "Couldn't find that setting in storage.");
-  } else return data;
+      })
+      .catch(err => {
+        callback(false, err);
+      });
+    if (callback && typeof callback == "function") {
+      if (data) callback(data);
+      else callback(false, "Couldn't find that setting in storage.");
+    } else return data;
+  });
 };
 
 module.exports = {
