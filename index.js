@@ -1,16 +1,15 @@
 const fs = require("fs");
 const _object = require("lodash/fp/object");
 const options = {
-  storage: undefined,
-  default: undefined
+  storage,
+  default
 };
 let database;
 // handles buffering file and enables referencing
 const initialise = async opt => {
-  // removes the need to specify defaults on every call
-  // by persisting any passed settings
   let buf = new Buffer(1024);
   let opts = opt;
+  // removes the need to specify defaults on every call by persisting any passed settings
   for (key in options) {
     if (!opts[key] && options[key]) {
       opts[key] = options[key];
@@ -146,7 +145,7 @@ const construct = (selection, value, callback) => {
 // Set the key:value pair, or a sub key:value pair if requested
 const set = async (selection, value, callback, force) => {
   return new Promise(async (resolve, reject) => {
-    if (!force) force = true; // force refreshing from file by default
+    if (typeof force == "undefined") force = true; // force refreshing from file by default
     if (typeof selection == "string" && value) {
       await initialise({ force: force }).then(database => {
         construct(selection, value, data => {
@@ -154,11 +153,11 @@ const set = async (selection, value, callback, force) => {
             JSON.stringify(_object.merge(database, data))
           );
           fs.open(options.storage, "w", function(err, fd) {
-            if (err) reject("could not open file: " + err);
+            if (err) reject(false, "could not open file: " + err);
             fs.write(fd, output, 0, output.length, null, function(err) {
-              if (err) reject("error writing file: " + err);
+              if (err) reject(false, "error writing file: " + err);
               fs.close(fd, err => {
-                if (err) reject(err);
+                if (err) reject(false, err);
                 if (callback && typeof callback == "function") callback();
                 else resolve();
               });
@@ -208,7 +207,7 @@ const reset = async (selection, callback) => {
 const get = async (selection, callback, force) => {
   return new Promise(async (resolve, reject) => {
     let data;
-    if (!force) force = true; // force refreshing from file by default
+    if (typeof force == "undefined") force = true; // force refreshing from file by default
     await initialise({ force: force })
       .then(database => {
         if (typeof selection !== "function") {

@@ -1,6 +1,6 @@
 {
   "name": "electron-light-db",
-  "version": "1.0.32",
+  "version": "1.0.33",
   "description": "A lightweight Chrome.Storage - Mongoose like database for Electron",
   "main": "index.js",
   "scripts": {
